@@ -24,7 +24,9 @@ export default class {
     const billUrl = icon.getAttribute("data-bill-url")
     const imgWidth = Math.floor($('#modaleFile').width() * 0.5)
     $('#modaleFile').find(".modal-body").html(`<div style='text-align: center;' class="bill-proof-container"><img width=${imgWidth} src=${billUrl} alt="Bill" /></div>`)
-    $('#modaleFile').modal('show')
+    //$('#modaleFile').addClass('show') bonne approche ... mais non !
+    // rajout de la condition : typeof $() === function
+    if (typeof $('#modaleFile') === 'function') $('#modaleFile').modal('show')
   }
 
   getBills = () => {
@@ -53,7 +55,8 @@ export default class {
             }
           })
           console.log('length', bills.length)
-        return bills
+          //console.log('bills', bills)
+        return bills//.sort((a,b) => {return new Date(b.date) - new Date(a.date)})
       })
     }
   }

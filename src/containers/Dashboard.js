@@ -13,14 +13,16 @@ export const filteredBills = (data, status) => {
       // in jest environment
       if (typeof jest !== 'undefined') {
         selectCondition = (bill.status === status)
+        //console.log(`if ${selectCondition}`)
       }
       /* istanbul ignore next */
       else {
         // in prod environment
         const userEmail = JSON.parse(localStorage.getItem("user")).email
         selectCondition =
-          (bill.status === status) &&
-          ![...USERS_TEST, userEmail].includes(bill.email)
+        (bill.status === status) &&
+        ![...USERS_TEST, userEmail].includes(bill.email)
+        //console.log(`else ${selectCondition}`)
       }
 
       return selectCondition
@@ -71,6 +73,7 @@ export default class {
   constructor({ document, onNavigate, store, bills, localStorage }) {
     this.document = document
     this.onNavigate = onNavigate
+    this.previousId = null
     this.store = store
     $('#arrow-icon1').click((e) => this.handleShowTickets(e, bills, 1))
     $('#arrow-icon2').click((e) => this.handleShowTickets(e, bills, 2))
@@ -86,8 +89,14 @@ export default class {
   }
 
   handleEditTicket(e, bill, bills) {
-    if (this.counter === undefined || this.id !== bill.id) this.counter = 0
+    if (this.counter === undefined || this.id !== bill.id || this.previousId !== this.id) this.counter = 0
     if (this.id === undefined || this.id !== bill.id) this.id = bill.id
+    ///////
+    if (this.confirmId !== this.id) this.previousId = this.confirmId
+    if (this.confirmId !== this.previousId && this.confirmId === this.id) this.counter = 1
+    else if (this.confirmId === this.previousId && this.confirmId !== this.id) this.counter = 0
+    else if (this.confirmId === this.id && this.previousId !== this.id) this.counter = 0
+    console.log(`counter : ${this.counter}\n conf : ${this.confirmId}\n id : ${this.id} \n previous id : ${this.previousId}` )
     if (this.counter % 2 === 0) {
       bills.forEach(b => {
         $(`#open-bill${b.id}`).css({ background: '#0D5AE5' })
@@ -96,6 +105,7 @@ export default class {
       $('.dashboard-right-container div').html(DashboardFormUI(bill))
       $('.vertical-navbar').css({ height: '150vh' })
       this.counter ++
+      this.confirmId = this.id
     } else {
       $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
 
@@ -103,7 +113,7 @@ export default class {
         <div id="big-billed-icon" data-testid="big-billed-icon"> ${BigBilledIcon} </div>
       `)
       $('.vertical-navbar').css({ height: '120vh' })
-      this.counter ++
+      this.counter = 0
     }
     $('#icon-eye-d').click(this.handleClickIconEye)
     $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))

@@ -6,6 +6,10 @@ export default class NewBill {
     this.document = document
     this.onNavigate = onNavigate
     this.store = store
+    // initialisation du btn d'envoi de form et désactivation par defaut de celui-ci
+    this.submitBtn = this.document.querySelector('button#btn-send-bill')
+    this.submitBtn.disabled = true
+    //*********************************** */
     const formNewBill = this.document.querySelector(`form[data-testid="form-new-bill"]`)
     formNewBill.addEventListener("submit", this.handleSubmit)
     const file = this.document.querySelector(`input[data-testid="file"]`)
@@ -17,13 +21,39 @@ export default class NewBill {
   }
   handleChangeFile = e => {
     e.preventDefault()
-    const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
+    const testedFile = this.document.querySelector(`input[data-testid="file"]`)
+    const file = testedFile.files[0]
     const filePath = e.target.value.split(/\\/g)
     const fileName = filePath[filePath.length-1]
+    // création d'un tableau d'extensions autorisé
+    const authExtensions = ['jpg', 'jpeg', 'png']
+    // span msg error
+    const span = this.document.createElement('span')
+    span.setAttribute('data-error-msg', 'error')
+    span.innerText = `Veuillez choisir une image avec l\'extension suivante ${authExtensions.join(", ")}.`
+    span.style.fontSize = '10px'
+    span.style.color = 'red'
+    // creation d'un array en fonction des points se trouvant dans la chaine fileName
+    const cutFile = fileName.split('.')
+    // récupération de l'extension du fichier qui est la dernière cellule de notre array
+    // fraîchement créé
+    const extension = cutFile[cutFile.length-1]
+    // on teste que notre extension fait bien partie de celles autorisés
+    if (authExtensions.includes(extension)) {
+      this.submitBtn.disabled = false
+      if(testedFile.parentElement.hasChildNodes() && testedFile.parentElement.children[2]){
+        //console.log('this is it')
+        testedFile.parentElement.removeChild(testedFile.parentElement.children[2])
+      } 
+    }else{
+      this.submitBtn.disabled = true
+      testedFile.parentElement.appendChild(span)
+    }
     const formData = new FormData()
     const email = JSON.parse(localStorage.getItem("user")).email
     formData.append('file', file)
     formData.append('email', email)
+    //console.log( fileName + '\n' + extension)
 
     this.store
       .bills()
