@@ -3,7 +3,7 @@
  */
 
 import '@testing-library/jest-dom'
-import {screen, waitFor} from "@testing-library/dom"
+import {fireEvent, screen, waitFor} from "@testing-library/dom"
 import userEvent from '@testing-library/user-event'
 import {ROUTES, ROUTES_PATH} from "../constants/routes.js";
 import BillsUI from "../views/BillsUI.js"
@@ -52,31 +52,34 @@ describe("Given I am connected as an employee", () => {
       const getClasses = () => modaleFile.classList
       expect(getClasses()).not.toContain('show')
     })
+
     test("Then on click on iconEye should open a modal", async () => {
+      document.body.innerHTML = BillsUI({data: bills })
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname })
       }
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })   
-      window.localStorage.setItem('user', JSON.stringify({
-        type: 'Employee'
-      }))
-
-      document.body.innerHTML = BillsUI({data: bills })
-      const modaleFile = screen.getByTestId('modaleFile')
-      //const modaleFile = document.querySelector('div[data-testid="modaleFile"]')
-      const iconEye = screen.getAllByTestId(`icon-eye`)[0]
-      //const iconEye = document.querySelectorAll(`div[data-testid="icon-eye"]`)[0]
+      
+      const store = null
       const bill = new Bills({
-        document, onNavigate, store: null, localStorage: window.localStorage
+        document, onNavigate, store, localStorage: window.localStorage
       })
-      const handleClickIconEye = jest.fn(bill.handleClickIconEye(iconEye))
+    
+      const iconEye = screen.getAllByTestId(`icon-eye`)[0]
+      /**
+       * check for if the modal jQuery method is here before calling it to avoid error:
+       * "TypeError: $(...).modal is not a function"
+       */
+      $.fn.modal = jest.fn()
+      
+      const handleClickIconEye = jest.fn(()=>bill.handleClickIconEye(iconEye))
       iconEye.addEventListener('click', handleClickIconEye)
       userEvent.click(iconEye)
+      
       expect(handleClickIconEye).toHaveBeenCalled()
-      //expect(screen.getByTestId('modaleFile').classList).toContain('show')
-      //expect(modaleFile.classList).toContain('show')
-      expect(modaleFile).toBeTruthy()
+      
+      expect($.fn.modal).toHaveBeenCalled()
     })
+
     test('Then on click on button newBill, the NewBillUI should be called', () => {
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname })
