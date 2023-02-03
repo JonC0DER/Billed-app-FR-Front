@@ -26,7 +26,8 @@ export default class {
     $('#modaleFile').find(".modal-body").html(`<div style='text-align: center;' class="bill-proof-container"><img width=${imgWidth} src=${billUrl} alt="Bill" /></div>`)
     //$('#modaleFile').addClass('show') bonne approche ... mais non !
     // rajout de la condition : typeof $() === function
-    if (typeof $('#modaleFile') === 'function') $('#modaleFile').modal('show')
+    /*if (typeof $('#modaleFile') === 'function')*/ 
+    if($.fn.modal) $('#modaleFile').modal('show')
   }
 
   getBills = () => {
