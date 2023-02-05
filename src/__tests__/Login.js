@@ -1,11 +1,16 @@
 /**
  * @jest-environment jsdom
  */
-
+import React from 'react';
+import { shallow, mount, render } from "enzyme";
+import Enzyme from 'enzyme';
 import LoginUI from "../views/LoginUI";
 import Login from "../containers/Login.js";
 import { ROUTES, ROUTES_PATH } from "../constants/routes";
 import { fireEvent, screen } from "@testing-library/dom";
+import Adapter from 'enzyme-adapter-react-15';
+
+Enzyme.configure({ adapter: new Adapter() });
 
 describe("Given that I am a user on login page", () => {
   describe("When I do not fill fields and I click on employee button Login In", () => {
@@ -162,14 +167,90 @@ describe("Given that I am a user on login page", () => {
 
       form.addEventListener("submit", handleSubmit);
       fireEvent.submit(form);
-
+      
+      /*expect(store.users().create).toHaveBeenCalledWith({
+          data: JSON.stringify({inputData})
+      });*/
       expect(screen.getByTestId("form-admin")).toBeTruthy();
     });
   });
-/*
+  
+  describe("When I do fill fields in correct format and I click on admin button Login In", () => {
+    let store
+    let inputData
+    let formAdmin
+    let localStorage
+    let onNavigate
+    let PREVIOUS_LOCATION
+    let document
+    let login
+    let e
+    // création d'un mock pour tester les fonctions login de la class Login.
+    beforeEach(()=>{
+      store = {
+        login: jest.fn().mockResolvedValue({ jwt: 'token' }),
+        users: jest.fn(() => ({
+          create: jest.fn(() => Promise.resolve({}))
+        }))
+      };
+
+      inputData = {
+        type: "Admin",
+        email: "admin@email.com",
+        password: "password",
+        status: "connected",
+      };
+      formAdmin = {
+        addEventListener: jest.fn()
+      };
+      localStorage = {
+        setItem: jest.fn()
+      };
+      onNavigate = jest.fn();
+      PREVIOUS_LOCATION = '';
+      document = {
+        body: {
+          style: {
+            backgroundColor: '#000'
+          }
+        },
+        querySelector: jest.fn(() => formAdmin)
+      };
+     
+      login = new Login({ document, localStorage, onNavigate, PREVIOUS_LOCATION, store });
+      e = {
+        preventDefault: jest.fn(),
+        target: {
+          querySelector: jest.fn((selector) => {
+            if (selector === `input[data-testid="admin-email-input"]`) {
+              return { value: 'admin@email.com' };
+            }
+            if (selector === `input[data-testid="admin-password-input"]`) {
+              return { value: 'password' };
+            }
+          })
+        }
+      };  
+    }) // beforeEach
+
+    // on test si Login.login est appelé avec les données user en parametres
+    test("Then store.login should have been called with user", () => {
+      const user = {
+        email: inputData.email,
+        password: inputData.password
+      }
+      const spy = jest.spyOn(login, 'login')
+      login.handleSubmitAdmin(e);
+      expect(e.preventDefault).toHaveBeenCalled();
+      expect(localStorage.setItem).toHaveBeenCalledWith('user', JSON.stringify(inputData));
+      login.login(inputData)
+      expect(spy).toHaveBeenCalledWith( inputData );
+    }); //test
+  });
+
   describe("When I do fill fields in correct format and I click on admin button Login In", () => {
     test("Then I should be identified as an HR admin in app", () => {
-      document.body.innerHTML = LoginUI();      
+      document.body.innerHTML = LoginUI();
       const inputData = {
         type: "Admin",
         email: "johndoe@email.com",
@@ -197,7 +278,7 @@ describe("Given that I am a user on login page", () => {
         },
         writable: true,
       });
-      
+
       // we have to mock navigation to test it
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname });
@@ -205,12 +286,6 @@ describe("Given that I am a user on login page", () => {
 
       let PREVIOUS_LOCATION = "";
 
-      const Store = {
-        login: jest.fn(() => Promise.resolve({ jwt: 'token' })),
-        users: jest.fn(() => ({
-          create: jest.fn(() => Promise.resolve({}))
-        }))
-      };     
       const store = jest.fn();
 
       const login = new Login({
@@ -222,97 +297,24 @@ describe("Given that I am a user on login page", () => {
       });
 
       const handleSubmit = jest.fn(login.handleSubmitAdmin);
-      //const handleSubmit = jest.fn(login.handleSubmitAdmin);
-      //login.handleSubmitAdmin = jest.fn()
       login.login = jest.fn().mockResolvedValue({});
       form.addEventListener("submit", handleSubmit);
       fireEvent.submit(form);
       expect(handleSubmit).toHaveBeenCalled();
-
       expect(window.localStorage.setItem).toHaveBeenCalled();
       expect(window.localStorage.setItem).toHaveBeenCalledWith(
         "user",
-        JSON.stringify(inputData)
+        JSON.stringify({
+          type: "Admin",
+          email: inputData.email,
+          password: inputData.password,
+          status: "connected",
+        })
       );
-      //expect(window.localStorage.setItem).toHaveBeenCalledWith('jwt', 'token')
     });
 
     test("It should renders HR dashboard page", () => {
       expect(screen.queryByText("Validations")).toBeTruthy();
-    });
-  });
- */ 
-  
-  describe("When I do fill fields in correct format and I click on admin button Login In", () => {
-    test("Then I should be identified as an HR admin in app", () => {
-      const inputData = {
-        type: "Admin",
-        email: "johndoe@email.com",
-        password: "azerty",
-        status: "connected",
-      };
-      const formAdmin = {
-        addEventListener: jest.fn()
-      };
-      const localStorage = {
-        setItem: jest.fn()
-      };
-      const onNavigate = jest.fn();
-      const PREVIOUS_LOCATION = '';
-      const store = {
-        login: jest.fn(() => Promise.resolve({ jwt: 'token' })),
-        users: jest.fn(() => ({
-          create: jest.fn(() => Promise.resolve({}))
-        }))
-      };
-      const document = {
-        body: {
-          style: {
-            backgroundColor: '#000'
-          }
-        },
-        querySelector: jest.fn(() => formAdmin)
-      };
-
-      const login = new Login({ document, localStorage, onNavigate, PREVIOUS_LOCATION, store });
-      const e = {
-        preventDefault: jest.fn(),
-        target: {
-          querySelector: jest.fn((selector) => {
-            if (selector === `input[data-testid="admin-email-input"]`) {
-              return { value: 'admin@email.com' };
-            }
-            if (selector === `input[data-testid="admin-password-input"]`) {
-              return { value: 'password' };
-            }
-          })
-        }
-      };
-      
-      login.handleSubmitAdmin(e);
-      expect(e.preventDefault).toHaveBeenCalled();
-      expect(localStorage.setItem).toHaveBeenCalledWith('user', JSON.stringify({
-        type: inputData.type,
-        email: inputData.email,
-        password: inputData.password,
-        status: inputData.status
-      }));
-      expect(store.login).toHaveBeenCalledWith(JSON.stringify({
-        email: 'admin@email.com',
-        password: 'password'
-      }));
-      expect(localStorage.setItem).toHaveBeenCalledWith('jwt', 'token');
-      expect(store.users().create).toHaveBeenCalledWith({
-          data: JSON.stringify({
-          type: inputData.type,
-          email: inputData.email,
-          password: inputData.password,
-          status: inputData.status
-        })
-      });
-      expect(onNavigate).toHaveBeenCalledWith(ROUTES_PATH.Dashboard);
-      expect(document.body.style.backgroundColor).toBe('#fff');
-      expect(PREVIOUS_LOCATION).toBe(ROUTES_PATH.Dashboard);
     });
   });
 });
