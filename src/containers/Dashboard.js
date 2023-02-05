@@ -88,12 +88,23 @@ export default class {
     if (typeof $('#modaleFileAdmin1').modal === 'function') $('#modaleFileAdmin1').modal('show')
   }
 
+  /*
+  // refactoring 
+  // création d'une variable this.counter  initialisé à 0 si this.id est réinitialisé
+  // this.counter s'incremente si `bill.id` est le même que le précédent
+  // ou une fois que this.id est afficher la première fois
+  // Si this.counter > 1 on affiche l'icon big-billed-icon
+  */
   handleEditTicket(e, bill, bills) {
-    if (this.id === undefined || this.id !== bill.id) this.id = bill.id
-   
-    if (!this.id) {
+    this.counter
+    if(this.id === bill.id)  this.counter ++
+    else if (this.id === undefined || this.id !== bill.id) {
+      this.id = bill.id
+      this.counter = 0
+    }
+    
+    if (this.counter > 1) {
       $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
-
       $('.dashboard-right-container div').html(`
         <div id="big-billed-icon" data-testid="big-billed-icon"> ${BigBilledIcon} </div>
       `)
@@ -105,7 +116,9 @@ export default class {
       $(`#open-bill${bill.id}`).css({ background: '#2A2B35' })
       $('.dashboard-right-container div').html(DashboardFormUI(bill))
       $('.vertical-navbar').css({ height: '150vh' })
+      this.counter ++
     }
+    console.log("handleEditTicket :", this.counter)
 
     $('#icon-eye-d').click(this.handleClickIconEye)
     $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
