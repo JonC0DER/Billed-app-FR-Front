@@ -24,15 +24,16 @@ export default class Login {
     }
     this.localStorage.setItem("user", JSON.stringify(user))
     this.login(user)
-      .catch(
-        (err) => this.createUser(user)
-      )
+    // inversion de catch .then -> then.catch
       .then(() => {
         this.onNavigate(ROUTES_PATH['Bills'])
         this.PREVIOUS_LOCATION = ROUTES_PATH['Bills']
         PREVIOUS_LOCATION = this.PREVIOUS_LOCATION
         this.document.body.style.backgroundColor="#fff"
       })
+      .catch(
+        (err) => console.log('login error ',err) //this.createUser(user)
+      )
 
   }
 
@@ -40,21 +41,27 @@ export default class Login {
     e.preventDefault()
     const user = {
       type: "Admin",
+      // resolution du bug 
+      // réécriture de  input[data-testid=employee-email-input] 
+      // en     ->      input[data-testid=admin-email-input]
       email: e.target.querySelector(`input[data-testid="admin-email-input"]`).value,
+      // réécriture de  input[data-testid=employee-password-input] 
+      // en     ->      input[data-testid=admin-password-input]
       password: e.target.querySelector(`input[data-testid="admin-password-input"]`).value,
       status: "connected"
     }
     this.localStorage.setItem("user", JSON.stringify(user))
     this.login(user)
-      .catch(
-        (err) => this.createUser(user)
-      )
+    // inversion de catch .then -> then.catch
       .then(() => {
         this.onNavigate(ROUTES_PATH['Dashboard'])
         this.PREVIOUS_LOCATION = ROUTES_PATH['Dashboard']
         PREVIOUS_LOCATION = this.PREVIOUS_LOCATION
         document.body.style.backgroundColor="#fff"
       })
+      .catch(
+        (err) => console.log('login error ',err) //this.createUser(user)
+      )
   }
 
   // not need to cover this function by tests
