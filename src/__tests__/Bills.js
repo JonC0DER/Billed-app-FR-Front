@@ -101,7 +101,10 @@ describe("Given I am connected as an employee", () => {
       expect(NewBillUI()).toBeTruthy()
     })
   })
-  
+ 
+  /*
+  // dréalisation de mock pour les erreur 404 et 500 
+  */
   describe("when run error occures API", () => {
     beforeEach(() => {
       jest.spyOn(mockStore, "bills")
